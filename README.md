@@ -1,7 +1,7 @@
 # Knowledge Reset: The Central Brain of the Digital Reset Ecosystem
 
-**Version:** 1.0  
-**Date:** January 16, 2026  
+**Version:** 2.0  
+**Date:** January 17, 2026  
 **Author:** Manus AI  
 **Status:** Final
 
@@ -22,6 +22,11 @@ This repository contains the complete documentation for the Knowledge Reset plat
 *   **[Product Requirements Document (PRD)](./docs/PRD_KnowledgeReset.md):** Outlines the vision, scope, and functional requirements for Knowledge Reset.
 *   **[Standard Operating Procedure (SOP)](./docs/SOP_KnowledgeReset.md):** Defines the operational guidelines for managing and interacting with the platform.
 *   **[Technical Specification](./docs/TechnicalSpecification_KnowledgeReset.md):** Provides a detailed overview of the platform's architecture, components, and technology stack.
+
+### Technical Deep Dives
+
+*   **[Web Crawler Architecture](./docs/Crawler_Architecture.md):** A complete technical specification for the web crawling system.
+*   **[Database Schema & Data Model](./docs/Database_Schema.md):** Detailed documentation of the database schema and data model.
 
 ### Supporting Documents
 
@@ -46,7 +51,9 @@ To understand the full scope and vision of Knowledge Reset, we recommend reading
 1.  **[Plain Language Overview](./docs/Plain_Language_Overview.md)**
 2.  **[Product Requirements Document (PRD)](./docs/PRD_KnowledgeReset.md)**
 3.  **[Technical Specification](./docs/TechnicalSpecification_KnowledgeReset.md)**
-4.  **[Standard Operating Procedure (SOP)](./docs/SOP_KnowledgeReset.md)**
+4.  **[Web Crawler Architecture](./docs/Crawler_Architecture.md)**
+5.  **[Database Schema & Data Model](./docs/Database_Schema.md)**
+6.  **[Standard Operating Procedure (SOP)](./docs/SOP_KnowledgeReset.md)**
 
 ---
 
