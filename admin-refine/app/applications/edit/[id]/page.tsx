@@ -40,26 +40,32 @@ export default function ApplicationEdit() {
                     <Input.TextArea rows={5} />
                 </Form.Item>
                 <Form.Item
-                    label="Status"
-                    name="status"
+                    label="Crawl Frequency"
+                    name="crawlFreqDays"
+                    rules={[
+                        {
+                            required: true,
+                            message: "Please select crawl frequency",
+                        },
+                    ]}
                 >
                     <Select
                         options={[
                             {
-                                label: "Pending",
-                                value: "pending",
+                                label: "Daily",
+                                value: 1,
                             },
                             {
-                                label: "Processing",
-                                value: "processing",
+                                label: "Weekly",
+                                value: 7,
                             },
                             {
-                                label: "Completed",
-                                value: "completed",
+                                label: "Bi-weekly",
+                                value: 14,
                             },
                             {
-                                label: "Failed",
-                                value: "failed",
+                                label: "Monthly",
+                                value: 30,
                             },
                         ]}
                     />

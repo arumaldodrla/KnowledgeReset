@@ -1,54 +1,60 @@
 "use client";
 
-import { useList, useCustomMutation } from "@refinedev/core";
+import { useList } from "@refinedev/core";
 import { List, useTable, EditButton, ShowButton, DeleteButton } from "@refinedev/antd";
 import { Table, Space, Button, message } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
-import { gql } from "graphql-request";
+import { GraphQLClient, gql } from "graphql-request";
+import { supabaseClient } from "@/app/utils/supabase-client";
+import { useState } from "react";
 
-const START_CRAWL = gql`
-  mutation StartCrawl($appId: ID!, $url: String!, $maxDepth: Int!, $maxPages: Int!) {
-    startCrawl(appId: $appId, url: $url, maxDepth: $maxDepth, maxPages: $maxPages) {
-      success
-      message
+const START_CRAWL_MUTATION = gql`
+    mutation StartCrawl($appId: String!, $url: String, $maxDepth: Int, $maxPages: Int) {
+        startCrawl(appId: $appId, url: $url, maxDepth: $maxDepth, maxPages: $maxPages) {
+            jobId
+            status
+            message
+        }
     }
-  }
 `;
 
 export default function ApplicationList() {
     const { tableProps } = useTable({
         resource: "applications",
     });
-
-    const { mutate: startCrawl, isLoading } = useCustomMutation();
+    const [loading, setLoading] = useState<string | null>(null);
 
     const handleStartCrawl = async (record: any) => {
+        console.log("Starting crawl for:", record);
+        setLoading(record.id);
+
         try {
-            const response = await fetch(process.env.NEXT_PUBLIC_API_URL!, {
-                method: "POST",
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session?.access_token) {
+                throw new Error("Not authenticated");
+            }
+
+            const client = new GraphQLClient(process.env.NEXT_PUBLIC_API_URL!, {
                 headers: {
-                    "Content-Type": "application/json",
+                    authorization: `Bearer ${session.access_token}`,
                 },
-                body: JSON.stringify({
-                    query: START_CRAWL,
-                    variables: {
-                        appId: record.id,
-                        url: record.urlDocBase,
-                        maxDepth: 50,
-                        maxPages: 100,
-                    },
-                }),
             });
 
-            const result = await response.json();
+            const data: any = await client.request(START_CRAWL_MUTATION, {
+                appId: record.id,
+                url: record.urlDocBase,
+                maxDepth: 3,
+                maxPages: 100,
+            });
 
-            if (result.data?.startCrawl?.success) {
-                message.success("Crawl started successfully!");
-            } else {
-                message.error(result.data?.startCrawl?.message || "Failed to start crawl");
-            }
+            console.log("Crawl success response:", data);
+            message.success(data.startCrawl?.message || "Crawl started successfully!");
         } catch (error: any) {
-            message.error(`Error: ${error.message}`);
+            console.error("Crawl error:", error);
+            message.error(error?.message || "Failed to start crawl");
+        } finally {
+            setLoading(null);
         }
     };
 
@@ -72,7 +78,7 @@ export default function ApplicationList() {
                                 type="primary"
                                 icon={<PlayCircleOutlined />}
                                 onClick={() => handleStartCrawl(record)}
-                                loading={isLoading}
+                                loading={loading === record.id}
                                 size="small"
                             >
                                 Start Crawl

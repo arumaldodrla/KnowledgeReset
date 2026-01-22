@@ -58,6 +58,15 @@ export default function RootLayout({
                         },
                       },
                       {
+                        name: "users",
+                        list: "/users",
+                        create: "/users/create",
+                        edit: "/users/edit/:id",
+                        meta: {
+                          label: "Users",
+                        },
+                      },
+                      {
                         name: "documents",
                         list: "/documents",
                         show: "/documents/show/:id",

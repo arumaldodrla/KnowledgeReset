@@ -36,6 +36,18 @@ class CreateUserInput:
     full_name: Optional[str] = None
 
 
+@strawberry.input
+class UpdateUserInput:
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+
+
+@strawberry.type
+class DeleteUserResponse:
+    success: bool
+    message: str
+
+
 @strawberry.type
 class Application:
     id: str
@@ -210,6 +222,7 @@ class CreateApplicationInput:
     name: str
     url_doc_base: str
     description: Optional[str] = None
+    crawl_freq_days: int = 7
 
 
 @strawberry.input

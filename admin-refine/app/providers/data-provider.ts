@@ -49,7 +49,7 @@ const GET_APPLICATIONS = gql`
 `;
 
 const GET_APPLICATION = gql`
-  query GetApplication($id: ID!) {
+  query GetApplication($id: String!) {
     application(id: $id) {
       id
       name
@@ -58,21 +58,20 @@ const GET_APPLICATION = gql`
       status
       lastCrawlAt
       createdAt
+      crawlFreqDays
     }
   }
 `;
 
 const CREATE_APPLICATION = gql`
-  mutation CreateApplication($name: String!, $urlDocBase: String!, $description: String) {
-    createApplication(name: $name, urlDocBase: $urlDocBase, description: $description) {
-      success
-      message
-      application {
-        id
-        name
-        urlDocBase
-        description
-      }
+  mutation CreateApplication($input: CreateApplicationInput!) {
+    createApplication(input: $input) {
+      id
+      name
+      urlDocBase
+      description
+      status
+      createdAt
     }
   }
 `;
@@ -91,6 +90,57 @@ const GET_CRAWL_JOBS = gql`
       status
       startedAt
       stats
+    }
+  }
+`;
+
+const GET_USERS = gql`
+  query GetUsers {
+    users {
+      id
+      email
+      createdAt
+      lastSignInAt
+    }
+  }
+`;
+
+const GET_USER = gql`
+  query GetUser($id: String!) {
+    users {
+      id
+      email
+      createdAt
+      lastSignInAt
+    }
+  }
+`;
+
+const CREATE_USER = gql`
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+      id
+      email
+      createdAt
+    }
+  }
+`;
+
+const UPDATE_USER = gql`
+  mutation UpdateUser($id: String!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+      id
+      email
+      createdAt
+    }
+  }
+`;
+
+const DELETE_USER = gql`
+  mutation DeleteUser($id: String!) {
+    deleteUser(id: $id) {
+      success
+      message
     }
   }
 `;
@@ -133,6 +183,14 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === "users") {
+        const data: any = await client.request(GET_USERS);
+        return {
+          data: data.users || [],
+          total: data.users?.length || 0,
+        };
+      }
+
       if (resource === "documents") {
         const data: any = await client.request(GET_DOCUMENTS);
         return {
@@ -171,9 +229,16 @@ export const dataProvider: DataProvider = {
       const client = await getClient();
 
       if (resource === "applications") {
-        const data: any = await client.request(CREATE_APPLICATION, variables as any);
+        const data: any = await client.request(CREATE_APPLICATION, { input: variables } as any);
         return {
-          data: data.createApplication?.application || {},
+          data: data.createApplication || {},
+        };
+      }
+
+      if (resource === "users") {
+        const data: any = await client.request(CREATE_USER, { input: variables } as any);
+        return {
+          data: data.createUser || {},
         };
       }
 
@@ -186,6 +251,15 @@ export const dataProvider: DataProvider = {
 
   update: async ({ resource, id, variables }) => {
     try {
+      const client = await getClient();
+
+      if (resource === "users") {
+        const data: any = await client.request(UPDATE_USER, { id, input: variables } as any);
+        return {
+          data: data.updateUser || {},
+        };
+      }
+
       // Update mutations would go here
       return { data: { id, ...variables } } as any;
     } catch (error) {
@@ -203,9 +277,35 @@ export const dataProvider: DataProvider = {
         return { data: { id } } as any;
       }
 
+      if (resource === "users") {
+        await client.request(DELETE_USER, { id });
+        return { data: { id } } as any;
+      }
+
       return { data: { id } } as any;
     } catch (error) {
       console.error("deleteOne error:", error);
+      throw error;
+    }
+  },
+
+  custom: async ({ url, method, payload, query, headers }) => {
+    try {
+      console.log("DATA PROVIDER CUSTOM METHOD CALLED", { url, method, payload });
+      const client = await getClient();
+      const customPayload = payload as any;
+
+      if (customPayload?.query && customPayload?.variables) {
+        console.log("Executing GraphQL mutation:", customPayload.query);
+        const data = await client.request(customPayload.query, customPayload.variables);
+        console.log("GraphQL response:", data);
+        return { data };
+      }
+
+      console.log("No query/variables in payload, returning empty");
+      return { data: {} };
+    } catch (error) {
+      console.error("custom error:", error);
       throw error;
     }
   },

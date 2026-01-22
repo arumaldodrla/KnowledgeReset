@@ -75,12 +75,13 @@ def list_applications(tenant_id: str) -> List[Dict[str, Any]]:
     return result.data
 
 
-def create_application(tenant_id: str, name: str, url_doc_base: str, description: Optional[str] = None) -> Dict[str, Any]:
+def create_application(tenant_id: str, name: str, url_doc_base: str, description: Optional[str] = None, crawl_freq_days: int = 7) -> Dict[str, Any]:
     """Create a new application."""
     data = {
         "tenant_id": tenant_id,
         "name": name,
         "url_doc_base": url_doc_base,
+        "crawl_freq_days": crawl_freq_days,
     }
     if description:
         data["description"] = description
@@ -161,6 +162,23 @@ def list_crawl_jobs(tenant_id: str, app_id: Optional[str] = None, limit: int = 2
     return result.data
 
 
+def create_crawl_job(app_id: str, tenant_id: str, url: str, max_depth: int, max_pages: int) -> Dict[str, Any]:
+    """Create a new crawl job."""
+    data = {
+        "app_id": app_id,
+        "tenant_id": tenant_id,
+        "status": "pending",
+        "config": {
+            "url": url,
+            "max_depth": max_depth,
+            "max_pages": max_pages
+        },
+        "stats": {}
+    }
+    result = supabase.table("crawl_jobs").insert(data).execute()
+    return result.data[0]
+
+
 # ==================== AUDIT LOGGING ====================
 
 def create_audit_log(
@@ -222,6 +240,47 @@ def create_user(email: str, password: str, user_metadata: Optional[Dict[str, Any
         "last_sign_in_at": user.last_sign_in_at,
         "user_metadata": user.user_metadata
     }
+
+
+def update_user(user_id: str, email: Optional[str] = None, full_name: Optional[str] = None) -> Dict[str, Any]:
+    """Update user details in Supabase Auth."""
+    update_data = {}
+    
+    if email:
+        update_data["email"] = email
+    
+    if full_name is not None:
+        update_data["user_metadata"] = {"full_name": full_name}
+    
+    if not update_data:
+        # Nothing to update, just return current user
+        user = supabase.auth.admin.get_user_by_id(user_id)
+        return {
+            "id": user.user.id,
+            "email": user.user.email,
+            "created_at": user.user.created_at,
+            "last_sign_in_at": user.user.last_sign_in_at,
+        }
+    
+    # Update user
+    user = supabase.auth.admin.update_user_by_id(user_id, update_data)
+    
+    return {
+        "id": user.user.id,
+        "email": user.user.email,
+        "created_at": user.user.created_at,
+        "last_sign_in_at": user.user.last_sign_in_at,
+    }
+
+
+def delete_user(user_id: str) -> bool:
+    """Delete user from Supabase Auth."""
+    try:
+        supabase.auth.admin.delete_user(user_id)
+        return True
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        return False
 
 
 def get_user_from_token(token: str) -> Optional[Dict[str, Any]]:

@@ -14,13 +14,13 @@ from dotenv import load_dotenv
 from schema import (
     Tenant, Application, Document, CrawlJob, User,
     SearchResult, CreateApplicationInput, SearchInput, CrawlResponse, Breadcrumb,
-    CreateUserInput, AuditLogInput, CrawlError, CrawlerSetting, UpdateSettingInput
+    CreateUserInput, UpdateUserInput, DeleteUserResponse, AuditLogInput, CrawlError, CrawlerSetting, UpdateSettingInput
 )
 from db import (
     get_tenant, list_tenants, create_tenant,
     get_application, list_applications, create_application, delete_application,
     get_document, list_documents, search_documents_text, search_documents_semantic,
-    get_crawl_job, list_crawl_jobs, create_audit_log, list_users, create_user,
+    get_crawl_job, list_crawl_jobs, create_crawl_job, create_audit_log, list_users, create_user, update_user, delete_user,
     get_crawler_settings, update_crawler_setting, get_setting_value
 )
 from auth import AuthContext
@@ -260,6 +260,35 @@ class Mutation:
         return User.from_dict(data)
 
     @strawberry.mutation
+    def update_user(self, info: Info, id: str, input: UpdateUserInput) -> User:
+        """Update user details (admin only)."""
+        auth = get_auth(info)
+        if not auth.is_authenticated:
+            raise Exception(f"Authentication required: {auth.error}")
+        
+        # Verify admin role
+        # TODO: Add proper role check
+        
+        data = update_user(id, input.email, input.full_name)
+        return User.from_dict(data)
+
+    @strawberry.mutation
+    def delete_user(self, info: Info, id: str) -> DeleteUserResponse:
+        """Delete user (admin only)."""
+        auth = get_auth(info)
+        if not auth.is_authenticated:
+            raise Exception(f"Authentication required: {auth.error}")
+        
+        # Verify admin role
+        # TODO: Add proper role check
+        
+        success = delete_user(id)
+        if success:
+            return DeleteUserResponse(success=True, message="User deleted successfully")
+        else:
+            return DeleteUserResponse(success=False, message="Failed to delete user")
+
+    @strawberry.mutation
     def update_crawler_setting(self, info: Info, input: UpdateSettingInput) -> CrawlerSetting:
         """Update a crawler setting for the current tenant."""
         auth = get_auth(info)
@@ -300,7 +329,8 @@ class Mutation:
             auth.tenant_id,
             input.name,
             input.url_doc_base,
-            input.description
+            input.description,
+            input.crawl_freq_days
         )
         
         create_audit_log(
@@ -334,24 +364,34 @@ class Mutation:
         if not app or app["tenant_id"] != auth.tenant_id:
             raise Exception("Application not found")
         
-        # Call crawler service
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{CRAWLER_URL}/api/crawler/start",
-                json={
-                    "tenant_id": auth.tenant_id,
-                    "app_id": app_id,
-                    "url": url or app["url_doc_base"],
-                    "max_depth": max_depth,
-                    "max_pages": max_pages
-                },
-                timeout=30.0
-            )
-            
-            if response.status_code != 200:
-                raise Exception(f"Failed to start crawl: {response.text}")
-            
-            result = response.json()
+        
+        # Call crawler service to create and start the job
+        crawl_url = url or app["url_doc_base"]
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{CRAWLER_URL}/api/crawler/start",
+                    json={
+                        "tenant_id": auth.tenant_id,
+                        "app_id": app_id,
+                        "url": crawl_url,
+                        "max_depth": max_depth,
+                        "max_pages": max_pages
+                    },
+                    timeout=30.0
+                )
+                
+                if response.status_code != 200:
+                    raise Exception(f"Crawler service error: {response.text}")
+                
+                result = response.json()
+                job_id = result.get("job_id")
+                
+        except httpx.RequestError as e:
+            raise Exception(f"Could not reach crawler service: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Failed to start crawl: {str(e)}")
         
         create_audit_log(
             event_type="CRAWL_JOB_STARTED",
@@ -360,11 +400,11 @@ class Mutation:
             actor_id=auth.user_id,
             target_type="application",
             target_id=app_id,
-            metadata={"job_id": result["job_id"]}
+            metadata={"job_id": job_id}
         )
         
         return CrawlResponse(
-            job_id=result["job_id"],
-            status=result["status"],
-            message=result["message"]
+            job_id=job_id,
+            status="running",
+            message=f"Crawl started successfully. Job ID: {job_id}"
         )

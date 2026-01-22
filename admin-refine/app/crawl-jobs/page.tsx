@@ -52,6 +52,22 @@ export default function CrawlJobsList() {
                         }
                     }}
                 />
+                <Table.Column
+                    dataIndex="stats"
+                    title="Error"
+                    render={(stats) => {
+                        try {
+                            const parsed = typeof stats === "string" ? JSON.parse(stats) : stats;
+                            const error = parsed?.error;
+                            if (!error) return "-";
+                            // Truncate long errors
+                            const shortError = error.length > 100 ? error.substring(0, 100) + "..." : error;
+                            return <span style={{ color: "red", fontSize: "12px" }}>{shortError}</span>;
+                        } catch {
+                            return "-";
+                        }
+                    }}
+                />
             </Table>
         </List>
     );
