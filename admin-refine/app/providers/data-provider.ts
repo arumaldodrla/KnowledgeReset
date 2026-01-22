@@ -217,6 +217,15 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === "users") {
+        // For users, we need to get from the list since we don't have a single user query
+        const data: any = await client.request(GET_USERS);
+        const user = data.users?.find((u: any) => u.id === id);
+        return {
+          data: user || {},
+        };
+      }
+
       return { data: {} } as any;
     } catch (error) {
       console.error("getOne error:", error);

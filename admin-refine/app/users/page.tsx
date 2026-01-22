@@ -10,11 +10,8 @@ export default function UsersList() {
 
     return (
         <List
-            headerButtons={({ defaultButtons }) => (
-                <>
-                    {defaultButtons}
-                    <CreateButton>Invite User</CreateButton>
-                </>
+            headerButtons={() => (
+                <CreateButton>Invite User</CreateButton>
             )}
         >
             <Table {...tableProps} rowKey="id">

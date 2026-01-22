@@ -53,6 +53,20 @@ export default function CrawlJobsList() {
                     }}
                 />
                 <Table.Column
+                    dataIndex="config"
+                    title="Requested By"
+                    render={(config) => {
+                        try {
+                            const parsed = typeof config === "string" ? JSON.parse(config) : config;
+                            // If config has a recurring flag or was triggered automatically, show "Re-Crawl"
+                            // Otherwise show "Manual"
+                            return parsed?.recurring ? "Re-Crawl" : "Manual";
+                        } catch {
+                            return "Manual";
+                        }
+                    }}
+                />
+                <Table.Column
                     dataIndex="stats"
                     title="Error"
                     render={(stats) => {
