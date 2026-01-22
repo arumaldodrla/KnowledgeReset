@@ -1,0 +1,16 @@
+Obligation,Control/Feature,Owner,Evidence Artifact,Status
+SOC2-CC6.1 Logical Access,JWT Authentication + RLS,Backend Team,auth.py + RLS policies,planned
+SOC2-CC6.2 User Registration,Supabase Auth + MFA,Backend Team,Supabase Auth config,planned
+SOC2-CC6.3 Role-Based Access,RBAC in application layer,Backend Team,rbac.py + tests,planned
+SOC2-CC7.1 System Monitoring,Vercel Analytics + Supabase Logs,DevOps,monitoring.md,planned
+SOC2-CC7.2 Audit Logging,Audit log table + events,Backend Team,audit_log_events.md + tests,planned
+ISO27001-A.8 Asset Management,Data classification,Security Team,DATA_CLASSIFICATION.md,planned
+ISO27001-A.9 Access Control,RLS + tenant isolation,Backend Team,RLS policies + tests,planned
+ISO27001-A.10 Cryptography,TLS + encryption at rest,Infrastructure,Supabase encryption config,planned
+GDPR-Art.17 Right to Erasure,Data deletion workflow,Backend Team,PRIVACY_OPERATIONS.md + delete endpoint,planned
+GDPR-Art.20 Data Portability,Data export workflow,Backend Team,PRIVACY_OPERATIONS.md + export endpoint,planned
+GDPR-Art.32 Security,Encryption + access controls,Backend Team,security baseline implementation,planned
+CCPA-1798.105 Deletion,Data deletion workflow,Backend Team,delete endpoint + tests,planned
+CCPA-1798.110 Right to Know,Data export workflow,Backend Team,export endpoint + tests,planned
+Tenant Isolation,RLS policies + tenant_id filtering,Backend Team,RLS tests + integration tests,planned
+AI Data Separation,No tenant data in model training,AI Team,AI processing audit logs,planned

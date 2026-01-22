@@ -1,0 +1,38 @@
+[00:00:07.442] Server  LOG      ✓ Ready in 4.5s
+[00:00:35.566] Server  LOG      ○ Compiling / ...
+[00:00:38.749] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:38.749] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:38.749] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:38.749] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:50.347] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:00:50.347] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:50.347] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:51.538] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:51.538] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:51.538] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:51.538] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:53.914] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:00:53.914] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:00.423] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:04.290] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:06.106] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:26.765] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:26.765] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:26.765] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:26.765] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:28.968] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:28.968] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:36.447] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:36.447] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:36.448] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:36.448] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:39.148] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:39.148] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:41.372] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:41.372] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:41.372] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:01:41.372] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:20:43.015] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:20:43.015] Browser LOG     Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:20:43.015] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
+[00:20:43.015] Browser LOG     [2;38;2;124;124;124m%s[0m Fetching from API: https://api-nu-seven-51.vercel.app/graphql
