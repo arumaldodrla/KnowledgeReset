@@ -3,6 +3,8 @@ node_modules/
 .DS_Store
 .env
 .env.local
+.env.example
+.env.*.example
 .vercel
 __pycache__/
 *.pyc
