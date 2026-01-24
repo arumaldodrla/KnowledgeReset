@@ -83,13 +83,18 @@ const DELETE_APPLICATION = gql`
 `;
 
 const GET_CRAWL_JOBS = gql`
-  query GetCrawlJobs {
-    crawlJobs {
+  query GetCrawlJobs($limit: Int, $offset: Int, $appId: ID) {
+    crawlJobs(limit: $limit, offset: $offset, appId: $appId) {
       id
       appId
       status
       startedAt
+      finishedAt
+      pagesProcessed
       stats
+      application {
+        name
+      }
     }
   }
 `;
@@ -101,12 +106,17 @@ const GET_USERS = gql`
       email
       createdAt
       lastSignInAt
+      role {
+        id
+        name
+        description
+      }
     }
   }
 `;
 
 const GET_USER = gql`
-  query GetUser($id: String!) {
+  query GetUser($id: ID!) {
     users {
       id
       email
@@ -127,7 +137,7 @@ const CREATE_USER = gql`
 `;
 
 const UPDATE_USER = gql`
-  mutation UpdateUser($id: String!, $input: UpdateUserInput!) {
+  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
     updateUser(id: $id, input: $input) {
       id
       email
@@ -137,7 +147,7 @@ const UPDATE_USER = gql`
 `;
 
 const DELETE_USER = gql`
-  mutation DeleteUser($id: String!) {
+  mutation DeleteUser($id: ID!) {
     deleteUser(id: $id) {
       success
       message
@@ -145,14 +155,38 @@ const DELETE_USER = gql`
   }
 `;
 
+const GET_ROLES = gql`
+  query GetRoles {
+    roles {
+      id
+      name
+      description
+      isSystem
+    }
+  }
+`;
+
+const ASSIGN_ROLE = gql`
+  mutation AssignRole($userId: ID!, $roleId: ID!) {
+    assignRole(userId: $userId, roleId: $roleId) {
+      id
+      email
+      role {
+        id
+        name
+      }
+    }
+  }
+`;
+
 const GET_DOCUMENTS = gql`
-  query GetDocuments {
-    documents {
+  query GetDocuments($limit: Int, $offset: Int, $appId: ID, $jobId: ID) {
+    documents(limit: $limit, offset: $offset, appId: $appId) {
       id
       appId
+      jobId
       title
       sourceUrl
-      contentText
       breadcrumbs {
         text
         href
@@ -163,39 +197,61 @@ const GET_DOCUMENTS = gql`
 `;
 
 export const dataProvider: DataProvider = {
-  getList: async ({ resource }) => {
+  getList: async ({ resource, pagination, filters }) => {
     try {
       const client = await getClient();
+      const { current = 1, pageSize = 10 } = pagination ?? {};
+      const limit = pageSize;
+      const offset = (current - 1) * pageSize;
+
+      // Extract filters
+      const appIdFilter = filters?.find((filter) => filter.operator === "eq" && filter.field === "appId");
+      const appId = appIdFilter?.value;
+
+      const variables = { limit, offset, appId };
 
       if (resource === "applications") {
         const data: any = await client.request(GET_APPLICATIONS);
+        // Applications query doesn't support pagination yet, so we slice locally if needed or just return all
+        // For now returning all to be safe as schema doesn't have offset for apps
+        const apps = data.applications || [];
         return {
-          data: data.applications || [],
-          total: data.applications?.length || 0,
+          data: apps,
+          total: apps.length,
         };
       }
 
       if (resource === "crawlJobs") {
-        const data: any = await client.request(GET_CRAWL_JOBS);
+        const data: any = await client.request(GET_CRAWL_JOBS, variables);
         return {
           data: data.crawlJobs || [],
-          total: data.crawlJobs?.length || 0,
+          total: 1000, // Total count not available in API yet, returning generic number allows pagination to next page
         };
       }
 
       if (resource === "users") {
         const data: any = await client.request(GET_USERS);
+        // Users query doesn't support pagination yet
         return {
           data: data.users || [],
           total: data.users?.length || 0,
         };
       }
 
+      if (resource === "roles") {
+        // Roles query doesn't support pagination yet
+        const data: any = await client.request(GET_ROLES);
+        return {
+          data: data.roles || [],
+          total: data.roles?.length || 0,
+        };
+      }
+
       if (resource === "documents") {
-        const data: any = await client.request(GET_DOCUMENTS);
+        const data: any = await client.request(GET_DOCUMENTS, variables);
         return {
           data: data.documents || [],
-          total: data.documents?.length || 0,
+          total: 10000, // Total count not available yet
         };
       }
 

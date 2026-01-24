@@ -74,6 +74,13 @@ export default function RootLayout({
                           label: "Documents",
                         },
                       },
+                      {
+                        name: "roles",
+                        list: "/roles",
+                        meta: {
+                          label: "Roles",
+                        },
+                      },
                     ]}
                     options={{
                       syncWithLocation: true,

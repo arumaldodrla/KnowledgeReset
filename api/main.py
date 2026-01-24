@@ -40,9 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add auth middleware
-app.add_middleware(AuthMiddleware)
-
 # Create GraphQL router with context
 def get_context(request: Request):
     return {"request": request}

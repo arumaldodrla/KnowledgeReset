@@ -113,8 +113,14 @@ class Crawler:
     async def crawl_page(self, page: Page, url: str) -> Optional[CrawlResult]:
         """Crawl a single page and extract content."""
         try:
-            # Navigate to page
-            response = await page.goto(url, timeout=self.config.timeout_ms)
+            print(f"DEBUG: Navigating to {url} for job {self.job_id}")
+            # Navigation with domcontentloaded is more resilient against slow trackers/ads
+            response = await page.goto(
+                url, 
+                wait_until="domcontentloaded", 
+                timeout=self.config.timeout_ms
+            )
+            print(f"DEBUG: Navigation to {url} finished for job {self.job_id} with status {response.status if response else 'None'}")
             
             if not response:
                 log_crawl_error(self.job_id, url, "NO_RESPONSE", "No response received")
@@ -126,8 +132,11 @@ class Crawler:
                 self.errors_count += 1
                 return None
             
-            # Wait for content to load
-            await page.wait_for_load_state("networkidle", timeout=10000)
+            # Optional additional wait for network to settle, but don't fail if it doesn't
+            try:
+                await page.wait_for_load_state("networkidle", timeout=5000)
+            except Exception:
+                pass
             
             # Get page HTML
             html = await page.content()
@@ -173,14 +182,17 @@ class Crawler:
     
     async def save_page(self, result: CrawlResult) -> str:
         """Save or update a crawled page in the database."""
+        print(f"DEBUG: Saving page {result.url} for job {self.job_id}")
         # Check if document already exists
         existing = get_document_by_url(self.tenant_id, self.app_id, result.url)
+        print(f"DEBUG: Document existence check finished for {result.url}, existing={existing is not None}")
         
         parent_id = self.determine_parent_id(result.breadcrumbs)
         
         doc_data = {
             "tenant_id": self.tenant_id,
             "app_id": self.app_id,
+            "job_id": self.job_id,  # Track which job last processed this document
             "parent_id": parent_id,
             "title": result.title,
             "content_text": result.content_text,
@@ -241,10 +253,29 @@ class Crawler:
         # Initialize queue with base URL
         self.queued_urls.append((self.base_url, 0))
         
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
+        print(f"DEBUG: Initializing async_playwright for job {self.job_id}")
+        pw_manager = async_playwright()
+        try:
+            p = await pw_manager.__aenter__()
+            print(f"DEBUG: async_playwright __aenter__ finished for job {self.job_id}")
+            
+            print(f"DEBUG: Launching browser for job {self.job_id}")
+            browser = await p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                ]
+            )
+            print(f"DEBUG: Browser launched for job {self.job_id}")
             context = await browser.new_context(
-                user_agent=self.config.user_agent
+                user_agent=self.config.user_agent,
+                extra_http_headers={
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Upgrade-Insecure-Requests": "1",
+                }
             )
             page = await context.new_page()
             
@@ -277,6 +308,13 @@ class Crawler:
                     
             finally:
                 await browser.close()
+        except Exception as e:
+            print(f"DEBUG: Error in crawler run: {str(e)}")
+            update_crawl_job_status(self.job_id, "failed", {"error": str(e)})
+            raise e
+        finally:
+            await pw_manager.__aexit__(None, None, None)
+            print(f"DEBUG: Playwright closed for job {self.job_id}")
         
         # Update job status
         stats = {
@@ -285,7 +323,13 @@ class Crawler:
             "urls_visited": len(self.visited_urls),
         }
         
-        status = "completed" if self.errors_count == 0 else "completed"
+        # If we didn't crawl any pages and we have errors, it's a failure
+        if self.pages_crawled == 0 and self.errors_count > 0:
+            status = "failed"
+            stats["error"] = "Crawl failed: 0 pages processed. Check crawl_errors for details."
+        else:
+            status = "completed"
+            
         update_crawl_job_status(self.job_id, status, stats)
         
         create_audit_log(
@@ -312,6 +356,7 @@ async def start_crawl(
         max_depth=config.get("max_depth", 3) if config else 3,
         max_pages=config.get("max_pages", 100) if config else 100,
         delay_ms=config.get("delay_ms", 1000) if config else 1000,
+        timeout_ms=config.get("timeout_ms", 30000) if config else 30000,
     )
     
     crawler = Crawler(

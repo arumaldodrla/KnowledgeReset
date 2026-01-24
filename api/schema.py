@@ -12,7 +12,7 @@ from datetime import datetime
 
 @strawberry.type
 class Tenant:
-    id: str
+    id: strawberry.ID
     name: str
     domain: Optional[str]
     status: str
@@ -50,8 +50,8 @@ class DeleteUserResponse:
 
 @strawberry.type
 class Application:
-    id: str
-    tenant_id: str
+    id: strawberry.ID
+    tenant_id: strawberry.ID
     name: str
     description: Optional[str]
     url_doc_base: str
@@ -86,32 +86,44 @@ class Breadcrumb:
 
 @strawberry.type
 class Document:
-    id: str
-    tenant_id: str
-    app_id: str
-    parent_id: Optional[str]
+    id: strawberry.ID
+    tenant_id: strawberry.ID
+    app_id: strawberry.ID
+    job_id: Optional[strawberry.ID]  # Added to track job
+    parent_id: Optional[strawberry.ID]
     title: str
     content_text: Optional[str]
     source_url: str
     breadcrumbs: List[Breadcrumb]
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
     
     @classmethod
     def from_dict(cls, data: dict) -> "Document":
         crumbs = data.get("breadcrumbs", []) or []
         breadcrumbs = [Breadcrumb(text=c.get("text", ""), href=c.get("href", "")) for c in crumbs]
+        
+        # Robust timestamp parsing
+        def parse_dt(val):
+            if not val: return None
+            if isinstance(val, datetime): return val
+            try:
+                return datetime.fromisoformat(val.replace("Z", "+00:00"))
+            except:
+                return None
+
         return cls(
             id=data["id"],
             tenant_id=data["tenant_id"],
             app_id=data["app_id"],
+            job_id=data.get("job_id"),
             parent_id=data.get("parent_id"),
-            title=data["title"],
+            title=data.get("title", "Untitled"),
             content_text=data.get("content_text"),
-            source_url=data["source_url"],
+            source_url=data.get("source_url", ""),
             breadcrumbs=breadcrumbs,
-            created_at=datetime.fromisoformat(data["created_at"].replace("Z", "+00:00")),
-            updated_at=datetime.fromisoformat(data["updated_at"].replace("Z", "+00:00")),
+            created_at=parse_dt(data.get("created_at")),
+            updated_at=parse_dt(data.get("updated_at")),
         )
 
 
@@ -122,11 +134,69 @@ class SearchResult:
 
 
 @strawberry.type
+class Permission:
+    create: bool
+    read: bool
+    update: bool
+    delete: bool
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Permission":
+        return cls(
+            create=data.get("create", False),
+            read=data.get("read", False),
+            update=data.get("update", False),
+            delete=data.get("delete", False)
+        )
+
+
+@strawberry.type
+class RolePermissions:
+    applications: Permission
+    crawls: Permission
+    documents: Permission
+    users: Permission
+    settings: Permission
+    roles: Permission
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "RolePermissions":
+        return cls(
+            applications=Permission.from_dict(data.get("applications", {})),
+            crawls=Permission.from_dict(data.get("crawls", {})),
+            documents=Permission.from_dict(data.get("documents", {})),
+            users=Permission.from_dict(data.get("users", {})),
+            settings=Permission.from_dict(data.get("settings", {})),
+            roles=Permission.from_dict(data.get("roles", {}))
+        )
+
+
+@strawberry.type
+class Role:
+    id: strawberry.ID
+    name: str
+    description: Optional[str]
+    permissions: RolePermissions
+    is_system: bool
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "Role":
+        return cls(
+            id=data["id"],
+            name=data["name"],
+            description=data.get("description"),
+            permissions=RolePermissions.from_dict(data.get("permissions", {})),
+            is_system=data.get("is_system", False)
+        )
+
+
+@strawberry.type
 class User:
-    id: str
+    id: strawberry.ID
     email: str
     created_at: datetime
     last_sign_in_at: Optional[datetime]
+    role: Optional[Role] = None
     
     @classmethod
     def from_dict(cls, data: dict) -> "User":
@@ -149,25 +219,26 @@ class User:
             email=data["email"],
             created_at=created_at,
             last_sign_in_at=last_sign_in,
+            role=None # Will be populated by resolver
         )
 
 
 @strawberry.type
 class CrawlError:
-    id: str
+    id: strawberry.ID
     error_message: str
     url: Optional[str]
 
 @strawberry.type
 class CrawlJob:
-    id: str
-    tenant_id: str
-    app_id: str
+    id: strawberry.ID
+    tenant_id: strawberry.ID
+    app_id: strawberry.ID
     status: str
     # Snake_case fields for internal use if needed, but alias for frontend
     started_at: Optional[datetime]
     finished_at: Optional[datetime]
-    stats: Optional[str]  # JSON string
+    stats: Optional[strawberry.scalars.JSON]  # Use JSON scalar for direct dict access
     created_at: datetime
     
     @strawberry.field
@@ -179,15 +250,19 @@ class CrawlJob:
         return self.finished_at
 
     @strawberry.field
+    def application(self) -> Optional["Application"]:
+        from db import get_application
+        if not self.app_id:
+            return None
+        data = get_application(str(self.app_id))
+        if not data:
+            return None
+        return Application.from_dict(data)
+
+    @strawberry.field
     def pages_processed(self) -> int:
-        if not self.stats:
-            return 0
-        import json
-        try:
-            data = json.loads(self.stats)
-            return data.get("pages_processed", 0)
-        except:
-            return 0
+        from db import count_documents_by_job
+        return count_documents_by_job(str(self.id))
 
     @strawberry.field
     def errors(self) -> List[CrawlError]:
@@ -210,7 +285,7 @@ class CrawlJob:
             status=data["status"],
             started_at=started,
             finished_at=finished,
-            stats=str(data.get("stats")) if data.get("stats") else None,
+            stats=data.get("stats"),
             created_at=datetime.fromisoformat(data["created_at"].replace("Z", "+00:00")),
         )
 
@@ -228,25 +303,25 @@ class CreateApplicationInput:
 @strawberry.input
 class SearchInput:
     query: str
-    app_id: Optional[str] = None
+    app_id: Optional[strawberry.ID] = None
     limit: int = 10
 
 
 @strawberry.input
 class AuditLogInput:
     action: str
-    actor: Optional[str] = None
+    actor: Optional[strawberry.ID] = None
     target_type: Optional[str] = None
-    target_id: Optional[str] = None
+    target_id: Optional[strawberry.ID] = None
     metadata_json: Optional[strawberry.scalars.JSON] = None
     ip_address: Optional[str] = None
-    request_id: Optional[str] = None
+    request_id: Optional[strawberry.ID] = None
 
 
 @strawberry.type
 class CrawlerSetting:
-    id: str
-    tenant_id: str
+    id: strawberry.ID
+    tenant_id: strawberry.ID
     setting_key: str
     setting_value: str
     description: Optional[str]
@@ -276,6 +351,9 @@ class UpdateSettingInput:
 
 @strawberry.type
 class CrawlResponse:
-    job_id: str
+    job_id: strawberry.ID
     status: str
     message: str
+
+
+# Note: Query and Mutation classes are defined in resolvers.py

@@ -153,13 +153,19 @@ def get_crawl_job(job_id: str) -> Optional[Dict[str, Any]]:
     return result.data
 
 
-def list_crawl_jobs(tenant_id: str, app_id: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
+def list_crawl_jobs(tenant_id: str, app_id: Optional[str] = None, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
     """List crawl jobs for a tenant."""
     query = supabase.table("crawl_jobs").select("*").eq("tenant_id", tenant_id)
     if app_id:
         query = query.eq("app_id", app_id)
-    result = query.order("created_at", desc=True).limit(limit).execute()
+    result = query.order("created_at", desc=True).limit(limit).offset(offset).execute()
     return result.data
+
+
+def count_documents_by_job(job_id: str) -> int:
+    """Count documents crawled in a specific job."""
+    result = supabase.table("documents").select("id", count="exact").eq("job_id", job_id).execute()
+    return result.count or 0
 
 
 def create_crawl_job(app_id: str, tenant_id: str, url: str, max_depth: int, max_pages: int) -> Dict[str, Any]:
@@ -339,3 +345,87 @@ def update_crawler_setting(tenant_id: str, key: str, value: str) -> Dict[str, An
     }
     result = supabase.table("crawler_settings").upsert(data, on_conflict="tenant_id,setting_key").execute()
     return result.data[0] if result.data else {}
+
+# ==================== ROLES & PERMISSIONS ====================
+
+def get_user_role(user_id: str, tenant_id: str) -> Optional[Dict[str, Any]]:
+    """Get the specific role for a user in a tenant."""
+    try:
+        result = supabase.table("user_tenants")\
+            .select("*, roles(*)")\
+            .eq("user_id", user_id)\
+            .eq("tenant_id", tenant_id)\
+            .single()\
+            .execute()
+        
+        if result.data and "roles" in result.data:
+            return result.data["roles"]
+        return None
+    except Exception as e:
+        print(f"Error getting user role: {e}")
+        return None
+
+
+def assign_role(user_id: str, tenant_id: str, role_id: str, invited_by: Optional[str] = None) -> bool:
+    """Assign a role to a user in a tenant."""
+    try:
+        data = {
+            "user_id": user_id,
+            "tenant_id": tenant_id,
+            "role_id": role_id,
+            "invited_by": invited_by
+        }
+        supabase.table("user_tenants").upsert(data, on_conflict="user_id,tenant_id").execute()
+        return True
+    except Exception as e:
+        print(f"Error assigning role: {e}")
+        return False
+
+
+def list_roles(tenant_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """List all available roles (system roles + custom tenant roles)."""
+    try:
+        query = supabase.table("roles").select("*")
+        if tenant_id:
+            query = query.or_(f"tenant_id.is.null,tenant_id.eq.{tenant_id}")
+        else:
+            query = query.filter("tenant_id", "is", "null")
+            
+        result = query.order("name").execute()
+        return result.data
+    except Exception as e:
+        print(f"Error listing roles: {e}")
+        return []
+
+
+def create_role(tenant_id: Optional[str], name: str, description: str, permissions: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a new role."""
+    try:
+        data = {
+            "tenant_id": tenant_id,
+            "name": name,
+            "description": description,
+            "permissions": permissions,
+            "is_system": tenant_id is None
+        }
+        result = supabase.table("roles").insert(data).execute()
+        return result.data[0] if result.data else {}
+    except Exception as e:
+        print(f"Error creating role: {e}")
+        return {}
+
+
+def check_permission(user_id: str, tenant_id: str, module: str, action: str) -> bool:
+    """Check if a user has a specific permission in a tenant."""
+    role = get_user_role(user_id, tenant_id)
+    if not role:
+        return False
+        
+    permissions = role.get("permissions", {})
+    module_perms = permissions.get(module, {})
+    
+    # Check for wildcard or specific action
+    if module_perms == True or module_perms.get("*") == True:
+        return True
+        
+    return module_perms.get(action, False)

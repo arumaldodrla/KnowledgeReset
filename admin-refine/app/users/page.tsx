@@ -17,6 +17,11 @@ export default function UsersList() {
             <Table {...tableProps} rowKey="id">
                 <Table.Column dataIndex="email" title="Email" />
                 <Table.Column
+                    dataIndex={["role", "name"]}
+                    title="Role"
+                    render={(value) => value || "No Role"}
+                />
+                <Table.Column
                     dataIndex="createdAt"
                     title="Created"
                     render={(value) => (value ? new Date(value).toLocaleDateString() : "-")}

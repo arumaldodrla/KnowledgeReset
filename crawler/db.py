@@ -24,16 +24,16 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
 
 def get_tenant(tenant_id: str) -> Optional[Dict[str, Any]]:
     """Get tenant by ID."""
-    result = supabase.table("tenants").select("*").eq("id", tenant_id).single().execute()
-    return result.data
+    result = supabase.table("tenants").select("*").eq("id", tenant_id).execute()
+    return result.data[0] if result.data else None
 
 
 # ==================== APPLICATIONS ====================
 
 def get_application(app_id: str) -> Optional[Dict[str, Any]]:
     """Get application by ID."""
-    result = supabase.table("applications").select("*").eq("id", app_id).single().execute()
-    return result.data
+    result = supabase.table("applications").select("*").eq("id", app_id).execute()
+    return result.data[0] if result.data else None
 
 
 def update_application_last_crawl(app_id: str) -> None:
@@ -71,8 +71,8 @@ def update_crawl_job_status(job_id: str, status: str, stats: Optional[Dict[str, 
 
 def get_crawl_job(job_id: str) -> Optional[Dict[str, Any]]:
     """Get crawl job by ID."""
-    result = supabase.table("crawl_jobs").select("*").eq("id", job_id).single().execute()
-    return result.data
+    result = supabase.table("crawl_jobs").select("*").eq("id", job_id).execute()
+    return result.data[0] if result.data else None
 
 
 # ==================== DOCUMENTS ====================
@@ -85,8 +85,8 @@ def get_document_by_url(tenant_id: str, app_id: str, source_url: str) -> Optiona
         "app_id", app_id
     ).eq(
         "source_url", source_url
-    ).single().execute()
-    return result.data if result.data else None
+    ).execute()
+    return result.data[0] if result.data else None
 
 
 def create_document(data: Dict[str, Any]) -> Dict[str, Any]:

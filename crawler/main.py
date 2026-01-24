@@ -35,6 +35,7 @@ class CrawlRequest(BaseModel):
     max_depth: int = 3
     max_pages: int = 100
     delay_ms: int = 1000
+    timeout_ms: int = 30000
 
 
 class CrawlResponse(BaseModel):
@@ -76,6 +77,43 @@ async def root():
     return {"status": "healthy", "service": "Knowledge Reset Crawler"}
 
 
+@app.get("/test-pw")
+async def test_pw():
+    results = {}
+    
+    # Test 1: Import check
+    try:
+        from playwright.async_api import async_playwright
+        results["import_async"] = "ok"
+    except Exception as e:
+        results["import_async"] = str(e)
+        
+    # Test 2: Driver check
+    try:
+        import subprocess
+        # Check if the playwright CLI can run
+        res = subprocess.run(["playwright", "--version"], capture_output=True, text=True)
+        results["cli_version"] = res.stdout.strip()
+    except Exception as e:
+        results["cli_version_error"] = str(e)
+        
+    # Test 3: Simple Async Launch (with timeout)
+    try:
+        import asyncio
+        async def try_launch():
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+                version = browser.version
+                await browser.close()
+                return version
+        
+        results["async_launch"] = await asyncio.wait_for(try_launch(), timeout=15)
+    except Exception as e:
+        results["async_launch_error"] = str(e)
+        
+    return results
+
+
 @app.post("/api/crawler/start", response_model=CrawlResponse)
 async def start_crawler(request: CrawlRequest, background_tasks: BackgroundTasks):
     """
@@ -102,6 +140,7 @@ async def start_crawler(request: CrawlRequest, background_tasks: BackgroundTasks
         "max_depth": request.max_depth,
         "max_pages": request.max_pages,
         "delay_ms": request.delay_ms,
+        "timeout_ms": request.timeout_ms,
         "url": crawl_url,
     }
     

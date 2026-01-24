@@ -9,8 +9,8 @@ import { supabaseClient } from "@/app/utils/supabase-client";
 import { useState } from "react";
 
 const START_CRAWL_MUTATION = gql`
-    mutation StartCrawl($appId: String!, $url: String, $maxDepth: Int, $maxPages: Int) {
-        startCrawl(appId: $appId, url: $url, maxDepth: $maxDepth, maxPages: $maxPages) {
+    mutation StartCrawl($appId: ID!, $url: String, $maxDepth: Int, $maxPages: Int, $timeoutMs: Int) {
+        startCrawl(appId: $appId, url: $url, maxDepth: $maxDepth, maxPages: $maxPages, timeoutMs: $timeoutMs) {
             jobId
             status
             message
@@ -46,6 +46,7 @@ export default function ApplicationList() {
                 url: record.urlDocBase,
                 maxDepth: 3,
                 maxPages: 100,
+                timeoutMs: 60000, // Increase default to 60s for manual trigger
             });
 
             console.log("Crawl success response:", data);

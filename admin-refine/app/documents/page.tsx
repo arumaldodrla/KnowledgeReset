@@ -1,24 +1,57 @@
 "use client";
 
-import { List, useTable } from "@refinedev/antd";
-import { Table } from "antd";
+import { List, useTable, useSelect } from "@refinedev/antd";
+import { Table, Select, Space } from "antd";
 
 export default function DocumentsList() {
-    const { tableProps } = useTable({
+    const { tableProps, searchFormProps } = useTable({
         resource: "documents",
+        pagination: {
+            pageSize: 10,
+        },
+        filters: {
+            initial: [],
+        }
+    });
+
+    const { selectProps: appSelectProps } = useSelect({
+        resource: "applications",
+        optionLabel: "name",
+        optionValue: "id",
     });
 
     return (
         <List>
-            <Table {...tableProps} rowKey="id">
+            <Space style={{ marginBottom: 16 }}>
+                <Select
+                    {...appSelectProps}
+                    style={{ width: 200 }}
+                    placeholder="Filter by Application"
+                    allowClear
+                    onChange={(value) => {
+                        searchFormProps.onFinish?.({
+                            appId: value,
+                        });
+                    }}
+                />
+            </Space>
+            <Table
+                {...tableProps}
+                rowKey="id"
+                pagination={{
+                    ...tableProps.pagination,
+                    showSizeChanger: true,
+                    pageSizeOptions: ["10", "20", "50", "100"],
+                }}
+            >
                 <Table.Column dataIndex="title" title="Title" ellipsis />
                 <Table.Column
-                    dataIndex="url"
+                    dataIndex="sourceUrl"
                     title="URL"
                     ellipsis
-                    render={(url) => (
-                        <a href={url} target="_blank" rel="noopener noreferrer">
-                            {url}
+                    render={(sourceUrl) => (
+                        <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+                            {sourceUrl}
                         </a>
                     )}
                 />
@@ -26,12 +59,8 @@ export default function DocumentsList() {
                     dataIndex="breadcrumbs"
                     title="Breadcrumbs"
                     render={(breadcrumbs) => {
-                        try {
-                            const parsed = typeof breadcrumbs === "string" ? JSON.parse(breadcrumbs) : breadcrumbs;
-                            return Array.isArray(parsed) ? parsed.join(" > ") : "-";
-                        } catch {
-                            return "-";
-                        }
+                        if (!Array.isArray(breadcrumbs)) return "-";
+                        return breadcrumbs.map((b: any) => b.text || b).join(" > ");
                     }}
                 />
                 <Table.Column
