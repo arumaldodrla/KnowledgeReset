@@ -223,9 +223,10 @@ export const dataProvider: DataProvider = {
 
       if (resource === "crawlJobs") {
         const data: any = await client.request(GET_CRAWL_JOBS, variables);
+        const jobs = data.crawlJobs || [];
         return {
-          data: data.crawlJobs || [],
-          total: 1000, // Total count not available in API yet, returning generic number allows pagination to next page
+          data: jobs,
+          total: jobs.length, // Use actual count to prevent empty pagination
         };
       }
 
@@ -249,9 +250,10 @@ export const dataProvider: DataProvider = {
 
       if (resource === "documents") {
         const data: any = await client.request(GET_DOCUMENTS, variables);
+        const docs = data.documents || [];
         return {
-          data: data.documents || [],
-          total: 10000, // Total count not available yet
+          data: docs,
+          total: docs.length, // Use actual count to prevent empty pagination
         };
       }
 
