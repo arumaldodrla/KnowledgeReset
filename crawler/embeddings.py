@@ -49,6 +49,11 @@ def generate_embedding(text: str) -> List[float]:
     Returns:
         List of 768 floats representing the normalized embedding
     """
+    # Validate input
+    if not text or not text.strip():
+        print("WARNING: Empty text provided for embedding, returning zero vector")
+        return [0.0] * OUTPUT_DIMENSIONS
+    
     # Truncate text if too long (Gemini supports up to 2048 tokens)
     max_chars = 8000  # Conservative estimate: ~4 chars per token
     if len(text) > max_chars:
