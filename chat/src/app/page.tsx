@@ -5,10 +5,20 @@ import styles from './chat.module.css';
 
 type TaskType = 'knowledge_ingestion' | 'query' | 'extraction' | 'summarization' | 'verification';
 
+interface Source {
+  id: string;
+  title: string;
+  content: string;
+  source_url: string;
+  similarity: number;
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  sources?: Source[];
+  searchType?: 'knowledge_base' | 'web' | 'none';
 }
 
 const taskLabels: Record<TaskType, { emoji: string; label: string }> = {
@@ -58,6 +68,10 @@ export default function ChatPage() {
       // Get metadata from headers
       const taskType = response.headers.get('X-Task-Type') as TaskType;
       const model = response.headers.get('X-Model-Used');
+      const searchType = response.headers.get('X-Search-Type') as 'knowledge_base' | 'web' | 'none';
+      const sourcesHeader = response.headers.get('X-Sources');
+      const sources: Source[] = sourcesHeader ? JSON.parse(sourcesHeader) : [];
+
       if (taskType) setCurrentTask(taskType);
       if (model) setCurrentModel(model);
 
@@ -70,6 +84,8 @@ export default function ChatPage() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: '',
+        sources,
+        searchType,
       };
       setMessages(prev => [...prev, assistantMsg]);
 
@@ -187,6 +203,31 @@ export default function ChatPage() {
                       <p key={i}>{line || '\u00A0'}</p>
                     ))}
                   </div>
+                  {message.role === 'assistant' && message.sources && message.sources.length > 0 && (
+                    <div className={styles.sources}>
+                      <p className={styles.sourcesLabel}>
+                        {message.searchType === 'web' ? '🌐 Web Sources:' : '📚 Knowledge Base:'}
+                      </p>
+                      <div className={styles.sourcesList}>
+                        {message.sources.map((source, idx) => (
+                          <a
+                            key={idx}
+                            href={source.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.sourceLink}
+                            title={source.content.slice(0, 200)}
+                          >
+                            <span className={styles.sourceNumber}>[{idx + 1}]</span>
+                            <span className={styles.sourceTitle}>{source.title}</span>
+                            <span className={styles.sourceSimilarity}>
+                              {Math.round(source.similarity * 100)}%
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {isPendingApproval && (
                     <div className={styles.approvalActions}>
                       <button className={styles.approveButton} onClick={() => handleSuggestion('✅ Approve')}>

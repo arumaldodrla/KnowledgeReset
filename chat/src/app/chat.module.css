@@ -240,6 +240,13 @@
     border-radius: var(--radius-md);
 }
 
+.sourcesLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
 .sourcesTitle {
     font-size: 12px;
     font-weight: 600;
@@ -251,24 +258,59 @@
 
 .sourcesList {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .sourceLink {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: 8px;
+    padding: 8px 12px;
     background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 13px;
-    color: var(--accent-primary);
+    color: var(--text-secondary);
     transition: all var(--transition-fast);
+    text-decoration: none;
 }
 
 .sourceLink:hover {
     background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+    transform: translateX(4px);
+}
+
+.sourceNumber {
+    font-weight: 600;
+    color: var(--accent-primary);
+    min-width: 24px;
+}
+
+.sourceLink:hover .sourceNumber {
+    color: white;
+}
+
+.sourceTitle {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sourceSimilarity {
+    font-size: 11px;
+    padding: 2px 6px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.sourceLink:hover .sourceSimilarity {
+    background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
