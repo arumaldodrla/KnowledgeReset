@@ -10,3 +10,6 @@ __pycache__/
 *.pyc
 
 crawler/.gcloud_config/
+venv/
+clear_db.py
+clear_db.sql
