@@ -1,4 +1,3 @@
-import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
 import { streamText, LanguageModel } from 'ai';
@@ -17,16 +16,15 @@ export const runtime = 'edge';
 
 /**
  * Get the appropriate AI SDK model instance
+ * Using Google Gemini and Anthropic Claude only (no OpenAI)
  */
 function getModelInstance(config: ModelConfig): LanguageModel {
     switch (config.provider) {
         case 'anthropic':
             return anthropic(config.model);
         case 'google':
-            return google(config.model);
-        case 'openai':
         default:
-            return openai(config.model);
+            return google(config.model);
     }
 }
 

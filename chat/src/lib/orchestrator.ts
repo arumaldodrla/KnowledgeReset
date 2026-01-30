@@ -14,7 +14,7 @@ export type TaskType =
     | 'summarization'         // Compress/summarize
     | 'verification';         // Fact-check
 
-export type Provider = 'openai' | 'anthropic' | 'google';
+export type Provider = 'anthropic' | 'google';
 export type ModelTier = 'economy' | 'standard' | 'premium';
 
 export interface ModelConfig {
@@ -26,17 +26,9 @@ export interface ModelConfig {
     costPer1kOutput: number; // USD
 }
 
-// Model configurations
+// Model configurations (Google Gemini + Anthropic Claude only)
 export const MODELS: Record<string, ModelConfig> = {
     // Economy tier - fast, cheap
-    'gpt-4o-mini': {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        tier: 'economy',
-        maxTokens: 16384,
-        costPer1kInput: 0.00015,
-        costPer1kOutput: 0.0006,
-    },
     'gemini-2.0-flash': {
         provider: 'google',
         model: 'gemini-2.0-flash',
@@ -47,14 +39,6 @@ export const MODELS: Record<string, ModelConfig> = {
     },
 
     // Standard tier - balanced
-    'gpt-4o': {
-        provider: 'openai',
-        model: 'gpt-4o',
-        tier: 'standard',
-        maxTokens: 16384,
-        costPer1kInput: 0.0025,
-        costPer1kOutput: 0.01,
-    },
     'claude-sonnet': {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -75,7 +59,7 @@ export const MODELS: Record<string, ModelConfig> = {
     },
 };
 
-// Task to model mapping
+// Task to model mapping (Google Gemini + Anthropic Claude only)
 export const TASK_MODEL_ROUTING: Record<TaskType, {
     primary: string;
     fallback: string;
@@ -87,23 +71,23 @@ export const TASK_MODEL_ROUTING: Record<TaskType, {
         escalation: 'claude-opus',    // Premium for low-confidence
     },
     query: {
-        primary: 'gpt-4o-mini',       // Cost-effective for simple queries
-        fallback: 'gemini-2.0-flash',
-        escalation: 'gpt-4o',         // Standard tier if complex
+        primary: 'gemini-2.0-flash',  // Fast and cost-effective for simple queries
+        fallback: 'claude-sonnet',
+        escalation: 'claude-opus',    // Premium tier if complex
     },
     extraction: {
         primary: 'claude-sonnet',     // Excellent structured output
-        fallback: 'gpt-4o',
+        fallback: 'gemini-2.0-flash',
         escalation: 'claude-opus',
     },
     summarization: {
         primary: 'gemini-2.0-flash',  // Fast, cheap, good at compression
-        fallback: 'gpt-4o-mini',
-        escalation: 'gpt-4o',
+        fallback: 'claude-sonnet',
+        escalation: 'claude-opus',
     },
     verification: {
         primary: 'claude-sonnet',     // Reliable, low hallucination
-        fallback: 'gpt-4o',
+        fallback: 'gemini-2.0-flash',
         escalation: 'claude-opus',
     },
 };
