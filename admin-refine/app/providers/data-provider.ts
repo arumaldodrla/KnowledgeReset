@@ -180,7 +180,7 @@ const ASSIGN_ROLE = gql`
 `;
 
 const GET_DOCUMENTS = gql`
-  query GetDocuments($limit: Int, $offset: Int, $appId: ID, $jobId: ID) {
+  query GetDocuments($limit: Int, $offset: Int, $appId: ID) {
     documents(limit: $limit, offset: $offset, appId: $appId) {
       id
       appId
