@@ -1,8 +1,0 @@
-{
-  "/crawler/applications/page": "app/crawler/applications/page.js",
-  "/crawler/jobs/page": "app/crawler/jobs/page.js",
-  "/crawler/page": "app/crawler/page.js",
-  "/crawler/settings/page": "app/crawler/settings/page.js",
-  "/crawler/users/page": "app/crawler/users/page.js",
-  "/page": "app/page.js"
-}

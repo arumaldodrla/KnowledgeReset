@@ -1,9 +1,0 @@
-1:"$Sreact.fragment"
-2:I[347257,["/metronic/starter-kits/nextjs/_next/static/chunks/d96012bcfc98706a.js","/metronic/starter-kits/nextjs/_next/static/chunks/d80b3790a119a285.js"],"ClientPageRoot"]
-3:I[51926,["/metronic/starter-kits/nextjs/_next/static/chunks/91aed63ab6319d68.js","/metronic/starter-kits/nextjs/_next/static/chunks/bcbf3ffb71a7d39f.js","/metronic/starter-kits/nextjs/_next/static/chunks/ab9f4b899df1ecd6.js","/metronic/starter-kits/nextjs/_next/static/chunks/55716887969ab0af.js","/metronic/starter-kits/nextjs/_next/static/chunks/7a1553ea32128abb.js","/metronic/starter-kits/nextjs/_next/static/chunks/8d686b0072cd3015.js","/metronic/starter-kits/nextjs/_next/static/chunks/bc424127038c4e6c.js","/metronic/starter-kits/nextjs/_next/static/chunks/64302a3af19cdb4f.js","/metronic/starter-kits/nextjs/_next/static/chunks/40a0bfc742d2a392.js","/metronic/starter-kits/nextjs/_next/static/chunks/36f7414b20504a8e.js","/metronic/starter-kits/nextjs/_next/static/chunks/e2247a3dad4fee44.js","/metronic/starter-kits/nextjs/_next/static/chunks/080d064c63916809.js"],"default"]
-6:I[897367,["/metronic/starter-kits/nextjs/_next/static/chunks/d96012bcfc98706a.js","/metronic/starter-kits/nextjs/_next/static/chunks/d80b3790a119a285.js"],"OutletBoundary"]
-7:"$Sreact.suspense"
-0:{"buildId":"M2CoOp2IMrPGjrJEWTYj6","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/metronic/starter-kits/nextjs/_next/static/chunks/080d064c63916809.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
-4:{}
-5:{}
-8:null

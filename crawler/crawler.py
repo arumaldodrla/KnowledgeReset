@@ -112,26 +112,48 @@ class Crawler:
         
     async def crawl_page(self, page: Page, url: str) -> Optional[CrawlResult]:
         """Crawl a single page and extract content."""
+        MAX_RETRIES = 3
+        response = None
+        
+        for attempt in range(MAX_RETRIES):
+            try:
+                print(f"DEBUG: Navigating to {url} for job {self.job_id} (Attempt {attempt + 1}/{MAX_RETRIES})")
+                # Navigation with domcontentloaded is more resilient against slow trackers/ads
+                response = await page.goto(
+                    url, 
+                    wait_until="domcontentloaded", 
+                    timeout=self.config.timeout_ms
+                )
+                
+                if response:
+                    print(f"DEBUG: Navigation to {url} finished for job {self.job_id} with status {response.status}")
+                    break
+                else:
+                    print(f"DEBUG: Navigation return None for {url} (Attempt {attempt + 1}/{MAX_RETRIES})")
+                    
+            except Exception as e:
+                print(f"DEBUG: Navigation error for {url} (Attempt {attempt + 1}/{MAX_RETRIES}): {str(e)}")
+                if attempt == MAX_RETRIES - 1:
+                    log_crawl_error(self.job_id, url, "MAX_RETRIES_EXCEEDED", f"Failed after {MAX_RETRIES} attempts: {str(e)}")
+                    self.errors_count += 1
+                    return None
+                
+                # Exponential backoff: 2s, 4s, 8s...
+                wait_time = 2 * (attempt + 1)
+                print(f"DEBUG: Waiting {wait_time}s before retrying {url}")
+                await asyncio.sleep(wait_time)
+
+        if not response:
+            log_crawl_error(self.job_id, url, "NO_RESPONSE", "No response received after retries")
+            self.errors_count += 1
+            return None
+        
+        if response.status >= 400:
+            log_crawl_error(self.job_id, url, str(response.status), f"HTTP {response.status}")
+            self.errors_count += 1
+            return None
+        
         try:
-            print(f"DEBUG: Navigating to {url} for job {self.job_id}")
-            # Navigation with domcontentloaded is more resilient against slow trackers/ads
-            response = await page.goto(
-                url, 
-                wait_until="domcontentloaded", 
-                timeout=self.config.timeout_ms
-            )
-            print(f"DEBUG: Navigation to {url} finished for job {self.job_id} with status {response.status if response else 'None'}")
-            
-            if not response:
-                log_crawl_error(self.job_id, url, "NO_RESPONSE", "No response received")
-                self.errors_count += 1
-                return None
-            
-            if response.status >= 400:
-                log_crawl_error(self.job_id, url, str(response.status), f"HTTP {response.status}")
-                self.errors_count += 1
-                return None
-            
             # Optional additional wait for network to settle, but don't fail if it doesn't
             try:
                 await page.wait_for_load_state("networkidle", timeout=5000)

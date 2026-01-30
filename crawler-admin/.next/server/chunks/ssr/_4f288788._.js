@@ -1,3 +1,0 @@
-module.exports=[950463,a=>{"use strict";var b=a.i(187924),c=a.i(497895);function d({className:a,...d}){return(0,b.jsx)("div",{"data-slot":"skeleton",className:(0,c.cn)("animate-pulse rounded-md bg-accent",a),...d})}a.s(["Skeleton",()=>d])},54274,a=>{"use strict";var b=a.i(187924),c=a.i(950463);function d(){return(0,b.jsx)(c.Skeleton,{className:"rounded-lg grow h-screen"})}a.s(["default",()=>d])}];
-
-//# sourceMappingURL=_4f288788._.js.map

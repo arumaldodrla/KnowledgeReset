@@ -1,3 +1,0 @@
-module.exports=[959434,a=>{"use strict";var b=a.i(187924),c=a.i(913780);function d(){return(0,b.jsx)("div",{className:"container-fluid py-5 bg-muted/30 dark:bg-zinc-900 ",children:(0,b.jsx)(c.Pattern,{className:"rounded-lg grow h-screen border border-dashed border-input bg-background text-subtle-stroke relative text-border"})})}a.s(["default",()=>d])}];
-
-//# sourceMappingURL=app_%28layouts%29_layout-34_page_tsx_b2d43eb9._.js.map
