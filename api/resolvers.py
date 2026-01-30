@@ -125,7 +125,16 @@ class Query:
         if not auth.is_authenticated or not auth.tenant_id:
             raise Exception(f"Tenant context required: {auth.error or 'Missing tenant_id'}")
         
+        # Debug logging
+        print(f"DEBUG documents query: tenant_id={auth.tenant_id}, app_id={app_id}, limit={limit}, offset={offset}")
+        
         data = list_documents(auth.tenant_id, str(app_id) if app_id else None, limit, offset)
+        
+        # Debug logging
+        print(f"DEBUG documents returned: count={len(data)}")
+        if data:
+            print(f"DEBUG first document: {data[0]}")
+        
         return [Document.from_dict(doc) for doc in data]
     
     @strawberry.field

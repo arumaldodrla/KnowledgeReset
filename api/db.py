@@ -117,10 +117,15 @@ def get_document(doc_id: str) -> Optional[Dict[str, Any]]:
 
 def list_documents(tenant_id: str, app_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
     """List documents for a tenant."""
+    print(f"DEBUG list_documents called: tenant_id={tenant_id}, app_id={app_id}, limit={limit}, offset={offset}")
+    
     query = supabase.table("documents").select("*").eq("tenant_id", tenant_id)
     if app_id:
         query = query.eq("app_id", app_id)
     result = query.limit(limit).offset(offset).execute()
+    
+    print(f"DEBUG list_documents result: count={len(result.data)}")
+    
     return result.data
 
 
