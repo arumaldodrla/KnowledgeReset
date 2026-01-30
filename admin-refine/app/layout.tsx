@@ -66,14 +66,14 @@ export default function RootLayout({
                           label: "Users",
                         },
                       },
-                      {
-                        name: "documents",
-                        list: "/documents",
-                        show: "/documents/show/:id",
-                        meta: {
-                          label: "Documents",
-                        },
-                      },
+                      // {
+                      //   name: "documents",
+                      //   list: "/documents",
+                      //   show: "/documents/show/:id",
+                      //   meta: {
+                      //     label: "Documents",
+                      //   },
+                      // },
                       {
                         name: "roles",
                         list: "/roles",
