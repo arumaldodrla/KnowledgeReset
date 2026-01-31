@@ -151,15 +151,15 @@
 .messages {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 0;
+    padding: 20px 0;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
 }
 
 .message {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     animation: fadeIn 0.3s ease;
 }
 
@@ -176,14 +176,14 @@
 }
 
 .avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .userAvatar {
@@ -198,19 +198,19 @@
 
 .messageContent {
     flex: 1;
-    padding-top: 6px;
+    padding-top: 2px;
 }
 
 .messageMeta {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .messageRole {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .messageTime {
@@ -219,17 +219,104 @@
 }
 
 .messageText {
-    line-height: 1.7;
+    line-height: 1.5;
     color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .messageText p {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .messageText p:last-child {
     margin-bottom: 0;
 }
+
+/* Markdown elements - compact styling */
+.messageText h1,
+.messageText h2,
+.messageText h3,
+.messageText h4 {
+    margin-top: 12px;
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.messageText h1 {
+    font-size: 18px;
+}
+
+.messageText h2 {
+    font-size: 16px;
+}
+
+.messageText h3 {
+    font-size: 15px;
+}
+
+.messageText h4 {
+    font-size: 14px;
+}
+
+.messageText ul,
+.messageText ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.messageText li {
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.messageText code {
+    font-size: 13px;
+    padding: 2px 6px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.messageText pre {
+    margin: 8px 0;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.messageText pre code {
+    padding: 0;
+    background: transparent;
+}
+
+.messageText blockquote {
+    margin: 8px 0;
+    padding-left: 12px;
+    border-left: 3px solid var(--border-color);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.messageText a {
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.messageText a:hover {
+    text-decoration: underline;
+}
+
+.messageText strong {
+    font-weight: 600;
+}
+
+.messageText em {
+    font-style: italic;
+}
+
 
 /* Sources */
 .sources {
@@ -339,7 +426,7 @@
     flex: 1;
     background: transparent;
     color: var(--text-primary);
-    font-size: 15px;
+    font-size: 14px;
     resize: none;
     min-height: 24px;
     max-height: 200px;
