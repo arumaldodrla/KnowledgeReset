@@ -8,9 +8,11 @@ import {
     TaskType,
     ModelConfig
 } from '@/lib/orchestrator';
-import { getSystemPrompt } from '@/lib/prompts';
+import { getSystemPrompt as getTaskSystemPrompt } from '@/lib/prompts';
 import { RAGRetriever, RetrievedDocument } from '@/lib/rag';
-import { searchWeb, formatWebSearchContext } from '@/lib/web-search';
+import { searchWeb, formatWebSearchContext, investigateTopic } from '@/lib/web-search';
+import type { ConversationContext } from '@/lib/conversation-modes';
+import { getSystemPrompt as getConversationSystemPrompt } from '@/lib/prompts';
 
 export const runtime = 'edge';
 
@@ -30,7 +32,10 @@ function getModelInstance(config: ModelConfig): LanguageModel {
 
 export async function POST(req: Request) {
     try {
-        const { messages, context, conversationId } = await req.json();
+        const { messages, conversationContext } = await req.json();
+
+        // Determine conversation mode from context
+        const mode = conversationContext?.mode || 'query';
 
         // Get the latest user message
         const lastUserMessage = messages
@@ -93,11 +98,26 @@ export async function POST(req: Request) {
             }
         }
 
-        // Step 3: Select model based on task
-        const modelConfig = selectModel(taskType, false);
 
-        // Step 4: Get task-specific system prompt with RAG context
-        const systemPrompt = getSystemPrompt(taskType, ragContext || context);
+        // Step 3: Select model and system prompt based on mode
+        let modelConfig: ModelConfig;
+        let systemPrompt: string;
+
+        if (mode === 'knowledge_capture' && conversationContext) {
+            // Use Gemini 3 Pro for knowledge ingestion
+            modelConfig = selectModel('knowledge_ingestion', false);
+            systemPrompt = getConversationSystemPrompt(conversationContext);
+
+            // Optionally trigger web research if needed
+            if (conversationContext.topic && conversationContext.researchedTopics?.length === 0) {
+                console.log('Conducting initial research on:', conversationContext.topic);
+                // Research happens in background, results available for next message
+            }
+        } else {
+            // Standard query mode
+            modelConfig = selectModel(taskType, false);
+            systemPrompt = getTaskSystemPrompt(taskType, ragContext);
+        }
 
         // Step 5: Call the LLM
         const model = getModelInstance(modelConfig);

@@ -218,3 +218,30 @@ export function getSystemPrompt(context: ConversationContext): string {
             return `You are a helpful AI assistant.`;
     }
 }
+
+/**
+ * Get task-based system prompt (for standard query mode without conversation context)
+ */
+export function getTaskSystemPrompt(taskType: string, context?: string): string {
+    const contextSection = context ? `\n\n**Available Context:**\n${context}` : '';
+    
+    switch (taskType) {
+        case 'knowledge_ingestion':
+            return `You are an expert knowledge engineer. Extract and structure information accurately.${contextSection}`;
+        
+        case 'query':
+            return `You are a helpful AI assistant. Answer questions accurately using the provided context.${contextSection}`;
+        
+        case 'extraction':
+            return `You are a data extraction specialist. Extract structured information from the provided text.${contextSection}`;
+        
+        case 'summarization':
+            return `You are a summarization expert. Create concise, accurate summaries.${contextSection}`;
+        
+        case 'verification':
+            return `You are a fact-checker. Verify information against the provided sources.${contextSection}`;
+        
+        default:
+            return `You are a helpful AI assistant.${contextSection}`;
+    }
+}
