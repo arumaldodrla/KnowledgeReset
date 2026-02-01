@@ -33,9 +33,10 @@ class CrawlRequest(BaseModel):
     app_id: str
     url: Optional[str] = None  # If not provided, uses app's url_doc_base
     max_depth: int = 3
-    max_pages: int = 100
+    max_pages: int = 10000
     delay_ms: int = 1000
     timeout_ms: int = 30000
+    max_runtime_seconds: int = 3600
 
 
 class CrawlResponse(BaseModel):
@@ -141,6 +142,7 @@ async def start_crawler(request: CrawlRequest, background_tasks: BackgroundTasks
         "max_pages": request.max_pages,
         "delay_ms": request.delay_ms,
         "timeout_ms": request.timeout_ms,
+        "max_runtime_seconds": request.max_runtime_seconds,
         "url": crawl_url,
     }
     

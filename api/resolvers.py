@@ -442,8 +442,9 @@ class Mutation:
         app_id: strawberry.ID,
         url: Optional[str] = None,
         max_depth: int = 3,
-        max_pages: int = 100,
-        timeout_ms: int = 30000
+        max_pages: int = 10000,
+        timeout_ms: int = 30000,
+        max_runtime_seconds: int = 3600
     ) -> CrawlResponse:
         """Start a crawl job for an application."""
         auth = get_auth(info)
@@ -469,7 +470,8 @@ class Mutation:
                         "url": crawl_url,
                         "max_depth": max_depth,
                         "max_pages": max_pages,
-                        "timeout_ms": timeout_ms
+                        "timeout_ms": timeout_ms,
+                        "max_runtime_seconds": max_runtime_seconds
                     },
                     timeout=30.0
                 )

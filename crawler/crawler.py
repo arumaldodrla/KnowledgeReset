@@ -6,6 +6,7 @@ Playwright-based web crawler with content extraction and hierarchy building.
 import hashlib
 import asyncio
 import os
+import time
 from typing import Optional, Dict, Any, List, Set
 from urllib.parse import urlparse, urljoin
 from datetime import datetime
@@ -41,9 +42,10 @@ class CrawlerConfig:
     def __init__(
         self,
         max_depth: int = 3,
-        max_pages: int = 100,
+        max_pages: int = 10000,
         delay_ms: int = 1000,
         timeout_ms: int = 30000,
+        max_runtime_seconds: int = 3600,  # 1 hour default
         respect_robots: bool = True,
         user_agent: str = "KnowledgeReset-Crawler/1.0",
     ):
@@ -51,6 +53,7 @@ class CrawlerConfig:
         self.max_pages = max_pages
         self.delay_ms = delay_ms
         self.timeout_ms = timeout_ms
+        self.max_runtime_seconds = max_runtime_seconds
         self.respect_robots = respect_robots
         self.user_agent = user_agent
 
@@ -106,6 +109,7 @@ class Crawler:
         self.queued_urls: List[tuple[str, int]] = []  # (url, depth)
         self.pages_crawled = 0
         self.errors_count = 0
+        self.start_time = None  # Will be set when crawl starts
         
         # Document parent mapping (for hierarchy)
         self.url_to_doc_id: Dict[str, str] = {}
@@ -301,9 +305,41 @@ class Crawler:
             )
             page = await context.new_page()
             
+            # Set start time for timeout tracking
+            self.start_time = time.time()
+            
             try:
                 while self.queued_urls and self.pages_crawled < self.config.max_pages:
                     url, depth = self.queued_urls.pop(0)
+                    
+                    # Check for timeout
+                    elapsed_time = time.time() - self.start_time
+                    if elapsed_time > self.config.max_runtime_seconds:
+                        print(f"DEBUG: Crawler timeout after {elapsed_time}s for job {self.job_id}")
+                        stats = {
+                            "pages_crawled": self.pages_crawled,
+                            "errors_count": self.errors_count,
+                            "urls_visited": len(self.visited_urls),
+                            "timeout": True,
+                            "elapsed_seconds": int(elapsed_time)
+                        }
+                        update_crawl_job_status(self.job_id, "timeout", stats)
+                        break
+                    
+                    # Check for cancellation every 10 pages
+                    if self.pages_crawled % 10 == 0:
+                        from db import get_crawl_job
+                        job = get_crawl_job(self.job_id)
+                        if job and job.get("status") == "cancelled":
+                            print(f"DEBUG: Crawler cancelled for job {self.job_id}")
+                            stats = {
+                                "pages_crawled": self.pages_crawled,
+                                "errors_count": self.errors_count,
+                                "urls_visited": len(self.visited_urls),
+                                "cancelled": True
+                            }
+                            update_crawl_job_status(self.job_id, "cancelled", stats)
+                            break
                     
                     # Skip if already visited
                     if url in self.visited_urls:
@@ -318,6 +354,17 @@ class Crawler:
                         # Save to database
                         await self.save_page(result)
                         self.pages_crawled += 1
+                        
+                        # Update progress every 10 pages
+                        if self.pages_crawled % 10 == 0:
+                            progress_stats = {
+                                "pages_crawled": self.pages_crawled,
+                                "errors_count": self.errors_count,
+                                "urls_visited": len(self.visited_urls),
+                                "current_url": url,
+                                "elapsed_seconds": int(time.time() - self.start_time)
+                            }
+                            update_crawl_job_status(self.job_id, "running", progress_stats)
                         
                         # Queue discovered links (if within depth)
                         if depth < self.config.max_depth:
@@ -376,9 +423,10 @@ async def start_crawl(
     """Start a crawl job."""
     crawler_config = CrawlerConfig(
         max_depth=config.get("max_depth", 3) if config else 3,
-        max_pages=config.get("max_pages", 100) if config else 100,
+        max_pages=config.get("max_pages", 10000) if config else 10000,
         delay_ms=config.get("delay_ms", 1000) if config else 1000,
         timeout_ms=config.get("timeout_ms", 30000) if config else 30000,
+        max_runtime_seconds=config.get("max_runtime_seconds", 3600) if config else 3600,
     )
     
     crawler = Crawler(
