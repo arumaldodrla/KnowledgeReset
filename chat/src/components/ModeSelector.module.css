@@ -1,0 +1,55 @@
+.modeSelector {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.modeButton {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.modeButton:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.modeButton.active {
+    background: var(--accent-gradient);
+    border-color: var(--accent-primary);
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.label {
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .label {
+        display: none;
+    }
+
+    .icon {
+        font-size: 20px;
+    }
+}

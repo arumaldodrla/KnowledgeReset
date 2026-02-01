@@ -1,0 +1,137 @@
+.contextCard {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.label {
+    color: var(--text-muted);
+    min-width: 80px;
+    font-weight: 500;
+}
+
+.value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.badge {
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge.legal {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.badge.accounting {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.badge.technical {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.badge.business {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.badge.compliance {
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+}
+
+.badge.general {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
+.confidenceBar {
+    position: relative;
+    flex: 1;
+    height: 20px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.confidenceFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.confidenceFill.high {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.confidenceFill.medium {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.confidenceFill.low {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.confidenceText {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.readyBadge {
+    margin-top: 4px;
+    padding: 8px 12px;
+    background: var(--success);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}

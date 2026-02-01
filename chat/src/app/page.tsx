@@ -2,6 +2,10 @@
 
 import { useState, useRef, useEffect, FormEvent, useCallback } from 'react';
 import styles from './chat.module.css';
+import ModeSelector from '../components/ModeSelector';
+import ConversationContextDisplay from '../components/ConversationContext';
+import KnowledgeDraftPreview from '../components/KnowledgeDraft';
+import { useConversation } from '../hooks/useConversation';
 
 type TaskType = 'knowledge_ingestion' | 'query' | 'extraction' | 'summarization' | 'verification';
 
@@ -36,6 +40,9 @@ export default function ChatPage() {
   const [currentTask, setCurrentTask] = useState<TaskType>('query');
   const [currentModel, setCurrentModel] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Conversation state management
+  const conversation = useConversation();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -141,15 +148,26 @@ export default function ChatPage() {
           <span className={styles.logoText}>Knowledge Reset</span>
         </div>
 
-        <div className={styles.modelSelector}>
-          <span className={styles.taskBadge}>
-            {taskLabels[currentTask]?.emoji} {taskLabels[currentTask]?.label}
-          </span>
-          {currentModel && (
-            <span className={styles.modelBadge}>{currentModel}</span>
-          )}
+        <div className={styles.headerRight}>
+          <ModeSelector
+            currentMode={conversation.mode}
+            onModeChange={conversation.switchMode}
+          />
+          <div className={styles.modelSelector}>
+            <span className={styles.taskBadge}>
+              {taskLabels[currentTask]?.emoji} {taskLabels[currentTask]?.label}
+            </span>
+            {currentModel && (
+              <span className={styles.modelBadge}>{currentModel}</span>
+            )}
+          </div>
         </div>
       </header>
+
+      {/* Conversation Context Display */}
+      {conversation.mode === 'knowledge_capture' && (
+        <ConversationContextDisplay context={conversation.context} />
+      )}
 
       {messages.length === 0 ? (
         <div className={styles.emptyState}>

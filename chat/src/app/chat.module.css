@@ -42,6 +42,12 @@
     background-clip: text;
 }
 
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .modelSelector {
     display: flex;
     align-items: center;
