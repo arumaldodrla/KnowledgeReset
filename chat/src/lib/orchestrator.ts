@@ -38,6 +38,16 @@ export const MODELS: Record<string, ModelConfig> = {
         costPer1kOutput: 0.0004,
     },
 
+    // Gemini 3 Flash - Next-gen balanced model
+    'gemini-3-flash': {
+        provider: 'google',
+        model: 'gemini-3-flash-preview',
+        tier: 'standard',
+        maxTokens: 65536,
+        costPer1kInput: 0.005,
+        costPer1kOutput: 0.02,
+    },
+
     // Standard tier - balanced
     'claude-sonnet': {
         provider: 'anthropic',
@@ -46,6 +56,16 @@ export const MODELS: Record<string, ModelConfig> = {
         maxTokens: 8192,
         costPer1kInput: 0.003,
         costPer1kOutput: 0.015,
+    },
+
+    // Gemini 3 Pro - Most intelligent for knowledge ingestion
+    'gemini-3-pro': {
+        provider: 'google',
+        model: 'gemini-3-pro-preview',
+        tier: 'premium',
+        maxTokens: 65536,
+        costPer1kInput: 0.015,
+        costPer1kOutput: 0.06,
     },
 
     // Premium tier - highest quality
@@ -66,8 +86,8 @@ export const TASK_MODEL_ROUTING: Record<TaskType, {
     escalation: string;
 }> = {
     knowledge_ingestion: {
-        primary: 'claude-sonnet',     // Best for structured extraction
-        fallback: 'gemini-2.0-flash', // Fast fallback
+        primary: 'gemini-3-pro',      // Most intelligent for deep knowledge capture
+        fallback: 'gemini-3-flash',   // Next-gen balanced fallback
         escalation: 'claude-opus',    // Premium for low-confidence
     },
     query: {
